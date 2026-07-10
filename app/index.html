@@ -3,10 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Share Your Experience — The Liberty Group of Nevada</title>
+  <title>Share Your Experience | The Liberty Group of Nevada</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <header class="site-header">
+    <img src="lgon-logo.png" alt="The Liberty Group of Nevada" class="site-logo" />
+  </header>
   <main class="app">
 
     <section class="screen" id="screen-landing" data-screen="landing">
@@ -42,14 +45,14 @@
       </div>
 
       <p class="confirmation" id="contact-confirmation" hidden>
-        Thanks — we'll be in touch.
+        Thanks, we'll be in touch.
       </p>
 
       <button class="btn btn-primary" id="chat-continue-btn" disabled>Continue to review</button>
     </section>
 
     <section class="screen" id="screen-draft" data-screen="draft" hidden>
-      <h1><span id="draft-heading-platform"></span> — review draft</h1>
+      <h1>Review draft for <span id="draft-heading-platform"></span></h1>
       <p class="repeat-notice" id="repeat-notice" hidden></p>
       <textarea id="draft-text" rows="8"></textarea>
       <p class="how-to-note" id="draft-instructions"></p>
@@ -60,7 +63,7 @@
       <h1>Where would you like to post it?</h1>
       <div class="platform-list" id="platform-list"></div>
       <p class="confirmation" id="picker-confirmation" hidden>
-        Pasted it? Great — thank you!
+        Pasted it? Great, thank you!
       </p>
       <p class="offer-more" id="offer-more" hidden>
         Want to share this on another site? If so, click the button for the site above, and

@@ -36,13 +36,13 @@ const PLATFORMS = [
 const QUESTIONS = [
   {
     id: "goal",
-    text: "What did you come to The Liberty Group of Nevada for — buying a business, selling a business, a valuation, or something else?",
+    text: "What did you come to The Liberty Group of Nevada for: buying a business, selling a business, a valuation, or something else?",
   },
   { id: "team", text: "Which team member(s) did you primarily work with?" },
   { id: "standout", text: "What stood out most about working with them or the process?" },
   {
     id: "surprise",
-    text: "Was there anything that surprised you along the way — good or challenging?",
+    text: "Was there anything that surprised you along the way, good or challenging?",
   },
   { id: "outcome", text: "How did things turn out, and how do you feel about it?" },
   {
@@ -206,7 +206,7 @@ function renderPickerScreen() {
 
   if (allUsed) {
     const done = document.createElement("p");
-    done.textContent = "You've shared this on every site — thank you!";
+    done.textContent = "You've shared this on every site, thank you!";
     list.appendChild(done);
     return;
   }
@@ -281,7 +281,7 @@ async function renderDraftScreen() {
     console.warn("Review generation failed", err);
     textarea.value = "";
     textarea.placeholder =
-      "We couldn't generate a draft automatically — go ahead and write your review here in your own words.";
+      "We couldn't generate a draft automatically, so go ahead and write your review here in your own words.";
   } finally {
     textarea.disabled = false;
     approveBtn.disabled = false;
@@ -357,7 +357,7 @@ let listening = false;
 
 if (!SpeechRecognitionCtor) {
   micBtn.disabled = true;
-  micBtn.title = "Voice input isn't supported in this browser — please type your answer.";
+  micBtn.title = "Voice input isn't supported in this browser, please type your answer.";
 } else {
   recognizer = new SpeechRecognitionCtor();
   recognizer.continuous = false;
