@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Share Your Experience — The Liberty Group of Nevada</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app">
+
+    <section class="screen" id="screen-landing" data-screen="landing">
+      <h1>Share Your Experience</h1>
+      <p>A quick conversation, about a minute, and we'll turn it into a review you can post
+        in your own words.</p>
+      <button class="btn btn-primary" data-action="start">Share Your Experience</button>
+    </section>
+
+    <section class="screen" id="screen-chat" data-screen="chat" hidden>
+      <h1>Let's talk about your experience</h1>
+      <div class="chat-log" id="chat-log"></div>
+
+      <div class="chat-input-row" id="chat-input-row">
+        <textarea id="chat-input" rows="2" placeholder="Type your answer…"></textarea>
+        <div class="chat-input-actions">
+          <button class="btn-icon" id="mic-btn" type="button" title="Answer by voice">🎤</button>
+          <button class="btn btn-primary" id="send-btn" type="button">Send</button>
+        </div>
+        <button class="btn-link" id="skip-btn" type="button" hidden>Skip this one</button>
+      </div>
+
+      <div class="contact-row" id="contact-row" hidden>
+        <input type="text" id="contact-name" placeholder="Name (optional)" />
+        <input type="email" id="contact-email" placeholder="Email (optional)" />
+        <button class="btn btn-primary" id="contact-continue-btn" type="button">Continue</button>
+      </div>
+
+      <button class="btn btn-primary" id="chat-continue-btn" hidden>Continue to review</button>
+    </section>
+
+    <section class="screen" id="screen-draft" data-screen="draft" hidden>
+      <h1><span id="draft-heading-platform"></span> — review draft</h1>
+      <p class="repeat-notice" id="repeat-notice" hidden></p>
+      <textarea id="draft-text" rows="8"></textarea>
+      <p class="how-to-note" id="draft-instructions"></p>
+      <button class="btn btn-primary" data-action="approve-draft">Approve &amp; continue</button>
+    </section>
+
+    <section class="screen" id="screen-picker" data-screen="picker" hidden>
+      <h1>Where would you like to post it?</h1>
+      <div class="platform-list" id="platform-list"></div>
+      <p class="confirmation" id="picker-confirmation" hidden>
+        Pasted it? Great — thank you!
+      </p>
+      <p class="offer-more" id="offer-more" hidden>
+        Want to share this on another site? If so, click the button for the site above, and
+        we'll provide an updated review for that site.
+      </p>
+    </section>
+
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
