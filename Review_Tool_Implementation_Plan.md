@@ -178,6 +178,21 @@ a manual spot-check (see spec §7) — the instruction text itself doesn't depen
 
 - Apply LGN's visual identity (logo, colors, fonts) to the shell built in Phases 1–5.
 
+**Done.** Pulled real values from the `lgon-style-guide` skill rather than guessing:
+- Logo: the approved `lgon-logo.png` in a persistent header, Liberty Gold (`#FFB547`) rule
+  beneath it.
+- Colors: Liberty Gold / Deep Gold (`#C98A00`) for buttons and accents, Gold Tint (`#FEF3DC`)
+  for chat bubbles and callout boxes, black/warm-gray (`#595959`) for text.
+- **Accessibility note:** the style guide's own DOCX examples pair white text on Liberty Gold
+  (e.g. table headers), but that combination fails WCAG AA contrast on screen (~1.8:1, needs
+  4.5:1). Used black text on gold instead (~12:1 contrast) — same brand color, readable in a
+  browser.
+- Typography: Georgia for headings, Calibri/Arial for body.
+- Swept every em dash out of user-facing copy per the guide's "no m-dashes" voice rule,
+  restructuring sentences or using commas/colons instead.
+- Verified via computed styles (not just visual guess) that colors/fonts/logo actually render
+  correctly, both locally and confirmed live in production after deploy.
+
 ## Phase 8 — Test pass before launch
 
 - Click through the full flow end-to-end for all three platforms, on both desktop and mobile,
