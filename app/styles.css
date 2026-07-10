@@ -85,6 +85,16 @@ textarea:disabled {
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg);
+}
+
 textarea {
   width: 100%;
   border: 1px solid var(--border);
@@ -176,10 +186,15 @@ textarea {
   text-align: left;
 }
 
+.contact-prompt {
+  margin-top: 16px;
+}
+
 .contact-row {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  margin-top: 16px;
 }
 
 .contact-row input {

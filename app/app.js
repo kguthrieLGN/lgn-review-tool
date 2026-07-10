@@ -49,7 +49,7 @@ const QUESTIONS = [
     id: "recommend",
     text: "Would you recommend The Liberty Group of Nevada to someone else buying or selling a business? Why or why not?",
   },
-  { id: "more", text: "Anything else you'd like to add?", optional: true },
+  { id: "more", text: "Anything else you'd like to add?" },
 ];
 
 const STORAGE_KEY = "lgnReviewSession";
@@ -59,6 +59,7 @@ function defaultChatState() {
     history: [],
     index: 0,
     answers: {},
+    contactRequested: false,
     contactDone: false,
     contact: { name: "", email: "" },
   };
@@ -69,6 +70,7 @@ function loadState() {
   if (raw) {
     const parsed = JSON.parse(raw);
     if (!parsed.chat) parsed.chat = defaultChatState();
+    if (parsed.chat.contactRequested === undefined) parsed.chat.contactRequested = false;
     if (!parsed.generatedDrafts) parsed.generatedDrafts = {};
     return parsed;
   }
@@ -117,27 +119,38 @@ function renderChatLog() {
 
 function updateChatControls() {
   const inputRow = document.getElementById("chat-input-row");
+  const contactPrompt = document.getElementById("contact-prompt");
   const contactRow = document.getElementById("contact-row");
+  const contactConfirmation = document.getElementById("contact-confirmation");
   const continueBtn = document.getElementById("chat-continue-btn");
-  const skipBtn = document.getElementById("skip-btn");
   const q = currentQuestion();
+  const allQuestionsDone = !q;
 
+  inputRow.hidden = !q;
   if (q) {
-    inputRow.hidden = false;
-    contactRow.hidden = true;
-    continueBtn.hidden = true;
-    skipBtn.hidden = !q.optional;
     document.getElementById("chat-input").value = "";
-  } else if (!state.chat.contactDone) {
-    inputRow.hidden = true;
+  }
+
+  continueBtn.disabled = !allQuestionsDone;
+
+  if (!allQuestionsDone) {
+    contactPrompt.hidden = true;
+    contactRow.hidden = true;
+    contactConfirmation.hidden = true;
+  } else if (state.chat.contactDone) {
+    contactPrompt.hidden = true;
+    contactRow.hidden = true;
+    contactConfirmation.hidden = false;
+  } else if (state.chat.contactRequested) {
+    contactPrompt.hidden = true;
     contactRow.hidden = false;
-    continueBtn.hidden = true;
+    contactConfirmation.hidden = true;
     document.getElementById("contact-name").value = state.chat.contact.name;
     document.getElementById("contact-email").value = state.chat.contact.email;
   } else {
-    inputRow.hidden = true;
+    contactPrompt.hidden = false;
     contactRow.hidden = true;
-    continueBtn.hidden = false;
+    contactConfirmation.hidden = true;
   }
 }
 
@@ -151,11 +164,10 @@ function renderChatScreen() {
   updateChatControls();
 }
 
-function submitAnswer(rawText) {
+function advanceToNextQuestion(rawText) {
   const q = currentQuestion();
   if (!q) return;
   const text = rawText.trim();
-  if (!text && !q.optional) return;
 
   state.chat.history.push({ role: "user", text: text || "(skipped)" });
   state.chat.answers[q.id] = text;
@@ -164,16 +176,20 @@ function submitAnswer(rawText) {
   const next = currentQuestion();
   if (next) {
     state.chat.history.push({ role: "bot", text: next.text });
-  } else {
-    state.chat.history.push({
-      role: "bot",
-      text: "Last thing — want to leave your name and email? Totally optional, just for our records.",
-    });
   }
 
   saveState();
   renderChatLog();
   updateChatControls();
+}
+
+function submitAnswer(rawText) {
+  if (!rawText.trim()) return;
+  advanceToNextQuestion(rawText);
+}
+
+function skipQuestion() {
+  advanceToNextQuestion("");
 }
 
 function renderPickerScreen() {
@@ -312,19 +328,20 @@ document.getElementById("chat-input").addEventListener("keydown", (event) => {
 });
 
 document.getElementById("skip-btn").addEventListener("click", () => {
-  submitAnswer("");
+  skipQuestion();
+});
+
+document.getElementById("contact-prompt-btn").addEventListener("click", () => {
+  state.chat.contactRequested = true;
+  saveState();
+  updateChatControls();
 });
 
 document.getElementById("contact-continue-btn").addEventListener("click", () => {
   state.chat.contact.name = document.getElementById("contact-name").value.trim();
   state.chat.contact.email = document.getElementById("contact-email").value.trim();
   state.chat.contactDone = true;
-
-  const providedAny = state.chat.contact.name || state.chat.contact.email;
-  state.chat.history.push({ role: "user", text: providedAny ? "Thanks, got it!" : "(skipped)" });
-
   saveState();
-  renderChatLog();
   updateChatControls();
 });
 

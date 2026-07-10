@@ -26,16 +26,26 @@
           <button class="btn-icon" id="mic-btn" type="button" title="Answer by voice">🎤</button>
           <button class="btn btn-primary" id="send-btn" type="button">Send</button>
         </div>
-        <button class="btn-link" id="skip-btn" type="button" hidden>Skip this one</button>
+        <button class="btn-link" id="skip-btn" type="button">Skip Question</button>
+      </div>
+
+      <div class="contact-prompt" id="contact-prompt" hidden>
+        <button class="btn btn-secondary" id="contact-prompt-btn" type="button">
+          Please contact me about my experience
+        </button>
       </div>
 
       <div class="contact-row" id="contact-row" hidden>
-        <input type="text" id="contact-name" placeholder="Name (optional)" />
-        <input type="email" id="contact-email" placeholder="Email (optional)" />
-        <button class="btn btn-primary" id="contact-continue-btn" type="button">Continue</button>
+        <input type="text" id="contact-name" placeholder="Name" />
+        <input type="email" id="contact-email" placeholder="Email" />
+        <button class="btn btn-primary" id="contact-continue-btn" type="button">Submit</button>
       </div>
 
-      <button class="btn btn-primary" id="chat-continue-btn" hidden>Continue to review</button>
+      <p class="confirmation" id="contact-confirmation" hidden>
+        Thanks — we'll be in touch.
+      </p>
+
+      <button class="btn btn-primary" id="chat-continue-btn" disabled>Continue to review</button>
     </section>
 
     <section class="screen" id="screen-draft" data-screen="draft" hidden>

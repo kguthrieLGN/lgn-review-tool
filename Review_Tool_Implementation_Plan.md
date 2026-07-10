@@ -193,27 +193,47 @@ a manual spot-check (see spec §7) — the instruction text itself doesn't depen
 - ~~Decide final hosting~~ — resolved: Vercel (see spec §9).
 - Point real client traffic at it (e.g., included in a post-close email/link).
 
-### Remaining steps — these require Stewart/Kathryn directly; I can't do them for you
+**Deployed and live** at `https://lgn-review-tool.vercel.app`, connected to
+`github.com/kguthrieLGN/lgn-review-tool` (git-based deploy — every push to `main` auto-redeploys).
+Verified in production: static assets serve correctly, and 5 consecutive real generation calls
+all succeeded with no errors.
 
-1. **Create a Vercel account** (free) at vercel.com, if you don't already have one.
-2. **Pick a deploy method** — two options, pick whichever is more comfortable:
-   - **Git-based (recommended long-term):** push this project to a GitHub repo, then "Import
-     Project" from that repo in the Vercel dashboard. Every future `git push` auto-redeploys.
-     Requires a GitHub account and turning this folder into a git repo (it isn't one yet —
-     I can set that up if you go this route).
-   - **CLI-based (faster for a one-time deploy):** install Node.js, then run `npm install -g
-     vercel` and `vercel` from inside the `Review Tool` folder — it deploys directly from your
-     machine, no GitHub needed. Re-deploying later means running `vercel` again by hand.
-3. **Set the real Claude API key as a Vercel environment variable** — Project Settings →
-   Environment Variables → add `ANTHROPIC_API_KEY` with your real key. This is separate from
-   the local `review_tool_credentials.py` file (that one only matters for local testing) — never
-   paste the real key into any file that goes into git or gets deployed.
-4. **Point a subdomain at it** (e.g. `reviews.libertygroupnv.com`) — add it in Vercel's project
-   domain settings, then add the CNAME record Vercel gives you at wherever your domain's DNS is
-   managed. Vercel issues the HTTPS certificate automatically once that's done.
-5. **Add the WordPress link** — a page or button linking to that subdomain, or an iframe embed
-   if you want it to feel more native to the site (needs `allow="microphone; clipboard-write"`
-   on the iframe tag for voice input and copy-to-clipboard to work inside it).
+Three real bugs surfaced and were fixed during this first deploy, worth knowing about for any
+future Vercel Python function work:
+1. **Cross-file imports between `api/` files aren't reliably supported** on Vercel's Python
+   runtime — our original `api/generate-review.py` importing from a sibling `api/_review_logic.py`
+   caused a raw `FUNCTION_INVOCATION_FAILED` in production (no useful error surfaced). Fixed by
+   merging everything into one self-contained file, `api/generate_review.py`, matching Vercel's
+   documented single-file pattern exactly. (Also renamed away from the hyphenated
+   `generate-review.py`, since hyphens aren't valid in a Python module name and blocked local
+   dev's own import of it.)
+2. **Claude's response content array isn't always `[text_block]`** — it can include a
+   `thinking` block before the text block, so assuming `content[0]["text"]` intermittently threw
+   a `KeyError`. Fixed by scanning for the block with `"type": "text"` instead of assuming
+   position. Confirmed the bug was real by hitting it twice in a row locally, then confirmed the
+   fix with 5 consecutive successful calls.
+3. **Security bug, now fixed:** an unexpected exception's raw text was being returned directly
+   in the API's error response. When the Claude API key was entered into Vercel with some stray
+   extra text and a newline attached (a copy-paste mistake), the resulting header error echoed
+   the real key back in the HTTP response — which happened once during testing. The exposed key
+   was rotated immediately. The code no longer ever returns raw exception text to the client
+   (logs server-side only via `print()`, returns a generic message instead), and now explicitly
+   rejects a key containing embedded newlines/quotes before it ever reaches an HTTP header.
+
+### Remaining steps
+
+1. ~~Create a Vercel account~~ — done.
+2. ~~Pick a deploy method~~ — done: git-based, via GitHub.
+3. ~~Set the real Claude API key as a Vercel environment variable~~ — done (and rotated once
+   after the leak above; currently working correctly).
+4. **Point a subdomain at it** (e.g. `reviews.libertygroupnv.com`) — still open. Add it in
+   Vercel's project domain settings, then add the CNAME record Vercel gives you at wherever your
+   domain's DNS is managed. Vercel issues the HTTPS certificate automatically once that's done.
+5. **Add the WordPress link** — still open. A page or button linking to that subdomain (or the
+   current `lgn-review-tool.vercel.app` URL if you don't want to wait on the subdomain), or an
+   iframe embed if you want it to feel more native to the site (needs
+   `allow="microphone; clipboard-write"` on the iframe tag for voice input and copy-to-clipboard
+   to work inside it).
 
 ### Still open: abuse protection for the public endpoint
 
