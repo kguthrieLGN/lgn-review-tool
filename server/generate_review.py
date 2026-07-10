@@ -4,7 +4,7 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "api"))
-from _review_logic import handle_generate_request  # noqa: E402
+from generate_review import handle_generate_request  # noqa: E402
 
 PORT = 5174
 
@@ -27,7 +27,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        if self.path != "/api/generate-review":
+        if self.path != "/api/generate_review":
             self._send_json(404, {"error": "not_found"})
             return
 
@@ -47,5 +47,5 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     print(f"Review generation backend (local dev) listening on http://localhost:{PORT}")
-    print("This is the same logic that runs as a Vercel function in production — see api/_review_logic.py")
+    print("This is the same logic that runs as a Vercel function in production — see api/generate_review.py")
     ThreadingHTTPServer(("localhost", PORT), Handler).serve_forever()

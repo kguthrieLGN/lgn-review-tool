@@ -3,6 +3,7 @@ import os
 import sys
 import urllib.error
 import urllib.request
+from http.server import BaseHTTPRequestHandler
 
 QUESTIONS = [
     {
@@ -131,7 +132,10 @@ def call_claude(prompt, api_key):
     )
     with urllib.request.urlopen(req, timeout=30) as resp:
         data = json.loads(resp.read().decode("utf-8"))
-        return data["content"][0]["text"].strip()
+        for block in data.get("content", []):
+            if block.get("type") == "text":
+                return block["text"].strip()
+        raise ValueError("Claude response contained no text content block")
 
 
 def handle_generate_request(payload):
@@ -168,3 +172,27 @@ def handle_generate_request(payload):
         return 502, {"error": "claude_api_error", "message": str(err)}
 
     return 200, {"review": review_text}
+
+
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        length = int(self.headers.get("Content-Length", 0) or 0)
+        try:
+            payload = json.loads(self.rfile.read(length) or b"{}")
+        except json.JSONDecodeError:
+            self._send_json(400, {"error": "invalid_json", "message": "Invalid JSON body."})
+            return
+
+        status, response = handle_generate_request(payload)
+        self._send_json(status, response)
+
+    def _send_json(self, status, payload):
+        body = json.dumps(payload).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, format, *args):
+        pass
