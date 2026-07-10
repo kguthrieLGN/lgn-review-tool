@@ -159,6 +159,20 @@ def handle_generate_request(payload):
             ),
         }
 
+    # Guard against a malformed credential (stray whitespace/newlines/quotes from a
+    # copy-paste mistake) before it ever reaches an HTTP header — never let a raw
+    # exception containing the attempted header value reach the client response.
+    if any(ch in api_key for ch in ("\n", "\r", '"', "'")):
+        print("ANTHROPIC_API_KEY appears malformed (contains whitespace/newlines) — check for a copy-paste error in the Environment Variable value.")
+        return 500, {
+            "error": "credentials_malformed",
+            "message": (
+                "ANTHROPIC_API_KEY is set but doesn't look like a valid key (it contains "
+                "extra whitespace or line breaks). Re-check the value in Environment "
+                "Variables — it should be only the raw key, no quotes or surrounding text."
+            ),
+        }
+
     prompt = build_prompt(answers, platform_key, prior_drafts)
 
     try:
@@ -169,7 +183,13 @@ def handle_generate_request(payload):
             "message": f"Claude API returned {err.code}: {err.reason}",
         }
     except Exception as err:  # network errors, timeouts, malformed responses
-        return 502, {"error": "claude_api_error", "message": str(err)}
+        # Never echo str(err) to the client — it can contain request internals
+        # (e.g. the attempted header value) which may include the API key itself.
+        print(f"call_claude failed: {err!r}")
+        return 502, {
+            "error": "claude_api_error",
+            "message": "The review generation service failed unexpectedly. Try again shortly.",
+        }
 
     return 200, {"review": review_text}
 
