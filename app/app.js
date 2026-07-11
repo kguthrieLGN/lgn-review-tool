@@ -59,8 +59,6 @@ function defaultChatState() {
     history: [],
     index: 0,
     answers: {},
-    contactRequested: false,
-    contactDone: false,
     contact: { name: "", email: "" },
   };
 }
@@ -70,7 +68,6 @@ function loadState() {
   if (raw) {
     const parsed = JSON.parse(raw);
     if (!parsed.chat) parsed.chat = defaultChatState();
-    if (parsed.chat.contactRequested === undefined) parsed.chat.contactRequested = false;
     if (!parsed.generatedDrafts) parsed.generatedDrafts = {};
     return parsed;
   }
@@ -119,9 +116,7 @@ function renderChatLog() {
 
 function updateChatControls() {
   const inputRow = document.getElementById("chat-input-row");
-  const contactPrompt = document.getElementById("contact-prompt");
   const contactRow = document.getElementById("contact-row");
-  const contactConfirmation = document.getElementById("contact-confirmation");
   const continueBtn = document.getElementById("chat-continue-btn");
   const q = currentQuestion();
   const allQuestionsDone = !q;
@@ -131,27 +126,13 @@ function updateChatControls() {
     document.getElementById("chat-input").value = "";
   }
 
-  continueBtn.disabled = !allQuestionsDone;
-
-  if (!allQuestionsDone) {
-    contactPrompt.hidden = true;
-    contactRow.hidden = true;
-    contactConfirmation.hidden = true;
-  } else if (state.chat.contactDone) {
-    contactPrompt.hidden = true;
-    contactRow.hidden = true;
-    contactConfirmation.hidden = false;
-  } else if (state.chat.contactRequested) {
-    contactPrompt.hidden = true;
-    contactRow.hidden = false;
-    contactConfirmation.hidden = true;
+  contactRow.hidden = !allQuestionsDone;
+  if (allQuestionsDone) {
     document.getElementById("contact-name").value = state.chat.contact.name;
     document.getElementById("contact-email").value = state.chat.contact.email;
-  } else {
-    contactPrompt.hidden = false;
-    contactRow.hidden = true;
-    contactConfirmation.hidden = true;
   }
+
+  continueBtn.disabled = !allQuestionsDone;
 }
 
 function renderChatScreen() {
@@ -331,21 +312,22 @@ document.getElementById("skip-btn").addEventListener("click", () => {
   skipQuestion();
 });
 
-document.getElementById("contact-prompt-btn").addEventListener("click", () => {
-  state.chat.contactRequested = true;
-  saveState();
-  updateChatControls();
-});
-
-document.getElementById("contact-continue-btn").addEventListener("click", () => {
+document.getElementById("chat-continue-btn").addEventListener("click", () => {
   state.chat.contact.name = document.getElementById("contact-name").value.trim();
   state.chat.contact.email = document.getElementById("contact-email").value.trim();
-  state.chat.contactDone = true;
   saveState();
-  updateChatControls();
-});
 
-document.getElementById("chat-continue-btn").addEventListener("click", () => {
+  if (state.chat.contact.email) {
+    fetch(`${BACKEND_URL}/api/send_thank_you`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: state.chat.contact.name,
+        email: state.chat.contact.email,
+      }),
+    }).catch((err) => console.warn("Thank-you email request failed", err));
+  }
+
   renderPickerScreen();
   showScreen("picker");
 });

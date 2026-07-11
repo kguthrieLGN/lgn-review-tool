@@ -5,8 +5,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "api"))
 from generate_review import handle_generate_request  # noqa: E402
+from send_thank_you import handle_send_thank_you_request  # noqa: E402
 
 PORT = 5174
+
+ROUTES = {
+    "/api/generate_review": handle_generate_request,
+    "/api/send_thank_you": handle_send_thank_you_request,
+}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -27,7 +33,8 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        if self.path != "/api/generate_review":
+        route = ROUTES.get(self.path)
+        if not route:
             self._send_json(404, {"error": "not_found"})
             return
 
@@ -38,7 +45,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(400, {"error": "invalid_json", "message": "Invalid JSON body."})
             return
 
-        status, response = handle_generate_request(payload)
+        status, response = route(payload)
         self._send_json(status, response)
 
     def log_message(self, format, *args):
@@ -46,6 +53,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    print(f"Review generation backend (local dev) listening on http://localhost:{PORT}")
-    print("This is the same logic that runs as a Vercel function in production — see api/generate_review.py")
+    print(f"Local dev backend listening on http://localhost:{PORT}")
+    print("Routes: " + ", ".join(ROUTES.keys()))
+    print("Same logic that runs as Vercel functions in production — see api/*.py")
     ThreadingHTTPServer(("localhost", PORT), Handler).serve_forever()

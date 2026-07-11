@@ -252,13 +252,47 @@ future Vercel Python function work:
 
 ### Still open: abuse protection for the public endpoint
 
-Once this is live, `/api/generate-review` is reachable by anyone, not just people you've
-emailed — worth deciding before wide rollout whether that's an acceptable risk given the link
-won't be publicly posted/indexed anywhere (low discovery risk), or whether to add a lightweight
-guard (e.g., a shared secret token the frontend sends along — deters casual bots, though anyone
-reading the public `app.js` could find it; real rate-limiting would need an external store like
-Vercel KV, which is more setup). Vercel's Hobby plan does include a baseline web application
-firewall/DDoS mitigation for free, which covers a good chunk of generic abuse already.
+Once this is live, `/api/generate_review` and `/api/send_thank_you` are reachable by anyone, not
+just people you've emailed — worth deciding before wide rollout whether that's an acceptable
+risk given the link won't be publicly posted/indexed anywhere (low discovery risk), or whether to
+add a lightweight guard (e.g., a shared secret token the frontend sends along — deters casual
+bots, though anyone reading the public `app.js` could find it; real rate-limiting would need an
+external store like Vercel KV, which is more setup). Vercel's Hobby plan does include a baseline
+web application firewall/DDoS mitigation for free, which covers a good chunk of generic abuse
+already.
+
+## Chat flow fixes + thank-you email (post-launch iteration)
+
+Requested after initial launch, both done and verified locally and in production:
+
+- **Universal skip, gated continue** (spec §3): every question now has a "Skip Question" option
+  that always advances, fixing a real bug where a required question with no valid skip path
+  could leave the client stuck. "Continue to review" is now always visible on the chat screen,
+  just disabled until every question is answered or skipped, rather than being hidden.
+- **Simplified contact capture** (spec §3b): removed the old two-step "click a button to reveal
+  the fields" flow. Name/email now show directly once questions are done, right next to
+  "Continue to review" — one button does everything: saves whatever contact info was given
+  (blank is fine), fires the thank-you email in the background if an email was provided, and
+  moves on to the platform picker. The email request is never awaited, so a slow or failed send
+  can't delay or block the client.
+- **New backend:** `api/send_thank_you.py`, structured identically to `api/generate_review.py`
+  (self-contained single file, matching Vercel's Python function convention; a plain
+  `handle_send_thank_you_request(payload)` function the local dev server also imports). Sends
+  via Resend's REST API (`RESEND_API_KEY`, resolved the same local-file-then-env-var way as the
+  Claude key). Currently sends from Resend's shared test address
+  (`onboarding@resend.dev`) since no domain is verified yet — fine for internal/dev use, but
+  worth switching to a verified `libertygroupnv.com` sender before this goes to real clients.
+- Local dev server renamed `server/generate_review.py` → `server/dev_server.py` and now
+  dispatches both `/api/generate_review` and `/api/send_thank_you` by path, since it now serves
+  more than one route.
+- **Action needed from Stewart/Kathryn:** add `RESEND_API_KEY` to
+  `review_tool_credentials.py` (local, for dev testing) and to Vercel's Environment Variables
+  (for production) — same two-step pattern as the Claude key. Until that's done, the app
+  silently skips sending (confirmed this degrades gracefully, doesn't error).
+- **Unrelated finding, not a bug in today's work:** the local `review_tool_credentials.py`'s
+  `ANTHROPIC_API_KEY` is currently being rejected by Anthropic (401 invalid key) — production's
+  separately-stored Vercel key still works fine, so this only affects local testing. Worth
+  updating the local file to match whatever key is now live in Vercel.
 
 ---
 

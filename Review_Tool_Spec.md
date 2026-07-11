@@ -38,7 +38,12 @@ Core promise to the client: "60 seconds of talking → a review you're happy wit
    - How did things turn out, and how do you feel about it?
    - Would you recommend LGN to someone else buying or selling a business — why or why not?
    - Anything else you'd like to add? *(optional, skippable)*
-   - Name and email — explicitly marked "totally optional, just for our records."
+   - Name and email — shown directly alongside the "Continue to review" button once all
+     questions are done, explicitly optional. If an email is provided, the client gets an
+     automatic thank-you email (see §3b) when they click Continue.
+   - **Decided:** every question, not just the last, has a "Skip Question" option that always
+     advances — an earlier draft only allowed skipping the final question, which meant a
+     required question with no answer could leave the client stuck with no way to proceed.
 3. **Platform selection (one at a time)** — instead of showing all three platform buttons at once,
    the client picks a single platform to start with from a simple list (Google / Facebook / BBB).
    This becomes the "active platform" for the next step. All three are enabled at this point.
@@ -89,6 +94,19 @@ Core promise to the client: "60 seconds of talking → a review you're happy wit
   - (b) Small "didn't actually post it? undo" link next to the disabled state — friendlier, but
     reopens the exact double-post risk this feature exists to prevent.
   Going with (a) unless you'd rather have the undo escape hatch.
+
+### 3b. Optional thank-you email
+
+- If the client fills in an email address (§3 step 2, last question), clicking "Continue to
+  review" saves the contact info and, in the background, triggers a short automatic thank-you
+  email. **This never blocks or delays moving to the platform picker** — the request fires
+  without waiting on it, so a slow or failed send has zero effect on the client's experience.
+- Sending is skipped entirely (silently, no error shown) if no email was provided, or if the
+  email service isn't configured — this is a nice-to-have, never a hard dependency.
+- **Current sender:** Resend's shared test sender (`onboarding@resend.dev`), no domain
+  verification done yet. Fine for internal/dev use; before wider rollout this should send from a
+  verified `libertygroupnv.com` address instead, for both deliverability and how it looks to the
+  recipient.
 
 ## 4. Compliance guardrails (non-negotiable)
 

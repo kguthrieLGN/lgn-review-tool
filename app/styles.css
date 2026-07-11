@@ -204,15 +204,16 @@ textarea {
   text-align: left;
 }
 
-.contact-prompt {
-  margin-top: 16px;
-}
-
 .contact-row {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-top: 16px;
+}
+
+.contact-intro {
+  font-size: 0.9rem;
+  margin: 0;
 }
 
 .contact-row input {
