@@ -50,15 +50,24 @@
     </section>
 
     <section class="screen" id="screen-picker" data-screen="picker" hidden>
-      <h1>Where would you like to post it?</h1>
-      <div class="platform-list" id="platform-list"></div>
-      <p class="confirmation" id="picker-confirmation" hidden>
-        Pasted it? Great, thank you!
-      </p>
-      <p class="offer-more" id="offer-more" hidden>
-        Want to share this on another site? If so, click the button for the site above, and
-        we'll provide an updated review for that site.
-      </p>
+      <div id="picker-active">
+        <h1>Where would you like to post it?</h1>
+        <div class="platform-list" id="platform-list"></div>
+        <p class="confirmation" id="picker-confirmation" hidden>
+          Pasted it? Great, thank you!
+        </p>
+        <p class="offer-more" id="offer-more" hidden>
+          Want to share this on another site? If so, click the button for the site above, and
+          we'll provide an updated review for that site.
+        </p>
+        <button class="btn btn-secondary" id="done-sharing-btn" type="button">
+          I am done sharing
+        </button>
+      </div>
+      <div id="picker-done" hidden>
+        <h1>Thank you</h1>
+        <p>Thanks for sharing your experience with The Liberty Group of Nevada. We appreciate it.</p>
+      </div>
     </section>
 
   </main>

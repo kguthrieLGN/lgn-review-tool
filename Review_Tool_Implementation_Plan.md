@@ -271,10 +271,8 @@ Requested after initial launch, both done and verified locally and in production
   just disabled until every question is answered or skipped, rather than being hidden.
 - **Simplified contact capture** (spec §3b): removed the old two-step "click a button to reveal
   the fields" flow. Name/email now show directly once questions are done, right next to
-  "Continue to review" — one button does everything: saves whatever contact info was given
-  (blank is fine), fires the thank-you email in the background if an email was provided, and
-  moves on to the platform picker. The email request is never awaited, so a slow or failed send
-  can't delay or block the client.
+  "Continue to review." That button just saves whatever contact info was given (blank is fine)
+  and moves on to the platform picker — it does **not** trigger the email (see below, moved).
 - **New backend:** `api/send_thank_you.py`, structured identically to `api/generate_review.py`
   (self-contained single file, matching Vercel's Python function convention; a plain
   `handle_send_thank_you_request(payload)` function the local dev server also imports). Sends
@@ -285,6 +283,21 @@ Requested after initial launch, both done and verified locally and in production
 - Local dev server renamed `server/generate_review.py` → `server/dev_server.py` and now
   dispatches both `/api/generate_review` and `/api/send_thank_you` by path, since it now serves
   more than one route.
+- **Moved the email trigger to a new "I am done sharing" button on the picker screen** (spec
+  §3b), instead of firing right when the chat ends. Rationale: the client hasn't actually
+  finished the flow at the end of the Q&A — they still need to post to whichever platforms they
+  want. Clicking "I am done sharing" fires the thank-you email in the background (never awaited,
+  same non-blocking behavior as before) and replaces the platform picker with a simple closing
+  "Thank you" message. This state (`state.doneSharing`) persists across a reload, so refreshing
+  after closing out doesn't reopen the picker. Verified all of this locally: reaching the picker
+  via "Continue to review" no longer fires the email request; clicking "I am done sharing" does;
+  reload after that keeps the closing message instead of showing the picker again.
+- **Debugged a real "I didn't get the email" report:** confirmed via direct API test that
+  `RESEND_API_KEY` still isn't configured in production (`email_not_configured` returned) — this
+  is a setup step not yet completed, not a code bug. Also flagged a likely second blocker once
+  it is configured: Resend's shared test sender typically only delivers to the Resend account's
+  own email address until a domain is verified, so testing with an arbitrary recipient address
+  may silently fail even with a valid key.
 - **Action needed from Stewart/Kathryn:** add `RESEND_API_KEY` to
   `review_tool_credentials.py` (local, for dev testing) and to Vercel's Environment Variables
   (for production) — same two-step pattern as the Claude key. Until that's done, the app

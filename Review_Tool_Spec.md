@@ -98,15 +98,25 @@ Core promise to the client: "60 seconds of talking → a review you're happy wit
 ### 3b. Optional thank-you email
 
 - If the client fills in an email address (§3 step 2, last question), clicking "Continue to
-  review" saves the contact info and, in the background, triggers a short automatic thank-you
-  email. **This never blocks or delays moving to the platform picker** — the request fires
-  without waiting on it, so a slow or failed send has zero effect on the client's experience.
+  review" just saves the contact info — the thank-you email does **not** fire at that point.
+- Instead, the picker screen (§3 step 3 onward) has an **"I am done sharing"** button, shown
+  alongside the platform list. Clicking it: fires the thank-you email in the background if an
+  email was given, then replaces the picker with a simple closing "Thank you" message. This
+  puts the email trigger at the point where the client has actually finished the whole flow
+  (posted to as many platforms as they wanted), not right when they finish the Q&A before
+  they've posted anywhere.
+- **This never blocks the closing message** — the email request fires without being waited on,
+  so a slow or failed send has zero effect on what the client sees.
 - Sending is skipped entirely (silently, no error shown) if no email was provided, or if the
   email service isn't configured — this is a nice-to-have, never a hard dependency.
+- The "done sharing" state persists across a page reload (same `sessionStorage` session), so
+  refreshing after closing out doesn't reopen the platform picker.
 - **Current sender:** Resend's shared test sender (`onboarding@resend.dev`), no domain
   verification done yet. Fine for internal/dev use; before wider rollout this should send from a
   verified `libertygroupnv.com` address instead, for both deliverability and how it looks to the
-  recipient.
+  recipient. Note: Resend's shared test sender typically only delivers to the email address on
+  the Resend account itself until a domain is verified — worth confirming this isn't silently
+  swallowing test sends to other addresses.
 
 ## 4. Compliance guardrails (non-negotiable)
 

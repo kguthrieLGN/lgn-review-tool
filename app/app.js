@@ -69,6 +69,7 @@ function loadState() {
     const parsed = JSON.parse(raw);
     if (!parsed.chat) parsed.chat = defaultChatState();
     if (!parsed.generatedDrafts) parsed.generatedDrafts = {};
+    if (parsed.doneSharing === undefined) parsed.doneSharing = false;
     return parsed;
   }
   return {
@@ -76,6 +77,7 @@ function loadState() {
     usedPlatforms: [],
     activePlatform: null,
     generatedDrafts: {},
+    doneSharing: false,
     chat: defaultChatState(),
   };
 }
@@ -174,6 +176,10 @@ function skipQuestion() {
 }
 
 function renderPickerScreen() {
+  document.getElementById("picker-active").hidden = state.doneSharing;
+  document.getElementById("picker-done").hidden = !state.doneSharing;
+  if (state.doneSharing) return;
+
   const list = document.getElementById("platform-list");
   const offerMore = document.getElementById("offer-more");
   const confirmation = document.getElementById("picker-confirmation");
@@ -317,6 +323,11 @@ document.getElementById("chat-continue-btn").addEventListener("click", () => {
   state.chat.contact.email = document.getElementById("contact-email").value.trim();
   saveState();
 
+  renderPickerScreen();
+  showScreen("picker");
+});
+
+document.getElementById("done-sharing-btn").addEventListener("click", () => {
   if (state.chat.contact.email) {
     fetch(`${BACKEND_URL}/api/send_thank_you`, {
       method: "POST",
@@ -328,8 +339,9 @@ document.getElementById("chat-continue-btn").addEventListener("click", () => {
     }).catch((err) => console.warn("Thank-you email request failed", err));
   }
 
+  state.doneSharing = true;
+  saveState();
   renderPickerScreen();
-  showScreen("picker");
 });
 
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
